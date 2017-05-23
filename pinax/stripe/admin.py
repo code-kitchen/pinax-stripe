@@ -15,7 +15,10 @@ from .models import (  # @@@ make all these read-only
     Plan,
     Coupon,
     Transfer,
-    TransferChargeFee
+    TransferChargeFee,
+    Product,
+    Sku,
+    Order
 )
 
 
@@ -371,9 +374,107 @@ admin.site.register(
     ],
     search_fields=[
         "stripe_id",
-        "event__stripe_id"
+        "event__stripe_id",
+        "description"
     ],
     inlines=[
         TransferChargeFeeInline
     ]
 )
+
+class SkuInline(admin.TabularInline):
+    model = Sku
+    extra = 0
+    max_num = 0
+    readonly_fields = ["stripe_id"]
+
+admin.site.register(
+    Product,
+    readonly_fields=[
+        "stripe_id",
+        "created_at",
+        "livemode"
+    ],
+    list_display=[
+        "stripe_id",
+        "name",
+        "caption",
+        "description",
+        "active",
+        "created_at"
+    ],
+    search_fields=[
+        "stripe_id",
+        "name",
+        "description",
+    ],
+    inlines=[
+        SkuInline
+    ]
+)
+
+class SkuAdmin(admin.ModelAdmin):
+    model = Sku
+    raw_id_fields = [
+        "product"
+    ]
+
+    readonly_fields = [
+        "stripe_id",
+        "created_at",
+        "livemode"
+    ]
+
+    list_display = [
+        "stripe_id",
+        "product_name",
+        "image",
+        "inventory",
+        "active",
+        "created_at"
+    ]
+
+    search_fields = [
+        "stripe_id",
+        "product__name",
+        "product__description"
+    ]
+
+    def product_name(self, obj):
+        return obj.product.name
+
+admin.site.register(Sku,SkuAdmin)
+
+class OrderAdmin(admin.ModelAdmin):
+    model = Order
+    raw_id_fields = [
+        "customer"
+    ]
+
+    readonly_fields = [
+        "stripe_id",
+        "created_at",
+        "charge",
+        "livemode"
+    ]
+
+    list_display = [
+        "stripe_id",
+        "customer_name",
+        "amount",
+        "currency",
+        "status",
+        "created_at"
+    ]
+
+    search_fields = [
+        "stripe_id",
+        "amount",
+        "customer__user__first_name",
+        "customer__user__last_name"
+    ]
+
+    def customer_name(self, obj):
+        return "%s %s" % (obj.customer.user.first_name, obj.customer.user.first_name)
+
+admin.site.register(Order,OrderAdmin)
