@@ -475,6 +475,6 @@ class OrderAdmin(admin.ModelAdmin):
     ]
 
     def customer_name(self, obj):
-        return "%s %s" % (obj.customer.user.first_name, obj.customer.user.first_name)
+        return "%s %s" % (obj.customer.user.first_name, obj.customer.user.last_name)
 
 admin.site.register(Order,OrderAdmin)
