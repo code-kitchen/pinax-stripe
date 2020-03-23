@@ -196,6 +196,19 @@ class Webhook(View):
         return super(Webhook, self).dispatch(*args, **kwargs)
 
     def post(self, request, *args, **kwargs):
+        # Verify Stripe signature before processing.
+        sig_header = request.META["HTTP_STRIPE_SIGNATURE"]
+        try:
+            stripe.Webhook.construct_event(
+                request.body, sig_header, settings.PINAX_STRIPE_WEBHOOK_SECRET
+            )
+        except ValueError:
+            # Invalid payload
+            return HttpResponse(status=400)
+        except stripe.error.SignatureVerificationError:
+            # Invalid signature
+            return HttpResponse(status=400)
+        
         body = smart_str(self.request.body)
         data = json.loads(body)
         event = Event.objects.filter(stripe_id=data["id"]).first()
