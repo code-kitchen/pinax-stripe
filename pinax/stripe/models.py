@@ -749,4 +749,4 @@ class Discount(models.Model):
     end = models.DateTimeField(null=True, blank=True)
     customer = models.OneToOneField(Customer, on_delete=models.CASCADE)
     coupon = models.ForeignKey(Coupon, on_delete=models.CASCADE)
-    subscription = models.ForeignKey(Subscription, null=True, blank=True)
+    subscription = models.ForeignKey(Subscription, on_delete=models.CASCADE, null=True, blank=True)
